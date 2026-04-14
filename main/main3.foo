@@ -1,0 +1,69 @@
+core: @scope (
+  allocator_t: @type  @rec(
+    alloc_fn:   @type @fn(allocator: @ptr;size :u64)(@ptr);
+    realloc_fn: @type @fn(allocator: @ptr;ptr: @ptr;size: u64)(@ptr);
+    free_fn:    @type @fn(allocator: @ptr;ptr: @ptr);
+    aptr: @ptr;
+
+    internal: @scope(
+      alloc: ~alloc_fn;
+      realloc:~realloc_fn;
+      free:   ~free_fn;
+    );
+
+    alloc:   alloc_fn = internal::alloc;
+    realloc: realloc_fn = internal::realloc;
+    free:    free_fn = internal::free;
+  );
+
+  pool_t: @type @rec(
+    data: @ptr;
+    size: u64;
+    capacity: u64;
+    alloc: allocator_t::alloc_fn = {
+      pool := @as{~pool_t}allocator;
+      size + pool::size ->
+        @if(@pipe > pool::capacity)
+            (@ret @null);
+      res := data + pool::size;
+      pool::size += size;
+      res;
+    };
+    realloc: allocator_t::realloc_fn = @null;
+    free:  allocator_t::free_fn = ();
+    make: @fn(mem: @ptr; capacity: u64)(pool_t) = {@ret {pool_t}::(mem; 0; capacity)};
+    make_allocator: @fn()(allocator_t) = {
+      @ret {allocator_t}::(@self; pool_t::malloc; pool_t::realloc; pool_t::free);
+    };
+  );
+);
+
+main: @fn(argc: s32; argv: ~~u8)(s32) = {
+  pool: @ptr = @as{u64}1000 -> pool_t::make(c::malloc(@pipe); @pipe);
+  allocator := pool::make_allocator();
+  val: ~s32 = allocator::alloc();
+};
+
+
+ffi: @scope(
+  c: @scope(
+    int: @type s32; 
+    uint: @type s32;
+    float: @type f32;
+    double: @type f64;
+
+    char: @type s8;
+
+    int8: @type s8;
+    int16: @type s16;
+    int32: @type s32;
+    int64: @type s64;
+    int128: @type s128;
+
+    uint8: @type u8;
+    uint16: @type u16;
+    uint32: @type u32;
+    uint64: @type u64;
+    uint128: @type u128;
+  )
+);

@@ -1,0 +1,37 @@
+scope :: record :: function () [expresion] :: a;
+
+scope access ->
+variable access -> 
+member access ->
+function call ->
+index access ->
+member access
+
+1   what type is the variable?
+    can it have members?
+
+2   what type is the member ?
+    is it callable ?
+    or does it have members ?
+
+3   are the function argumentes valid ?
+    what is the return type of that function ?
+
+
+scope doesn't need to be recorded for any reason only the final value we are tring to access
+
+scope access can only lead to a 
+  function call 
+  variable access 
+  it can't end there
+scope access can be used on a aggregate type as well
+
+variable access 
+  can end there 
+  it can lead to a member access if the type allows it
+
+member access can lead to 
+  another member access 
+  function call(if the type allows it) 
+  index access(if the type allows it)
+  end there 

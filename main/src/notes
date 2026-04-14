@@ -1,0 +1,36 @@
+scope prioritises the 1st ocurance of that symbol it finds on it's scope or it's ancestor scope
+
+so if somewhere in a scope we have "a" that is a record
+and somewhere else we have a "a" that is a int 
+but if the latter is closer to the expresion 
+we use that symbol in gets priority
+
+as long as something is not on the local scope it is ok to define it
+
+we need to first build a symbol table and be able to traverse it in the 2nd pass to do "lazy" eval
+otherwise we will have the C/C++(in C++ the problem doens't exist inside classes for some reason) problem
+and we will need to foward declare functions, types which is anoying
+types will be ptr only if their declaration index is higher than the requesting token
+functions are to do whatever they want
+variables will be just like C/C++, I do not want a python system
+some how I need to not have recursive relations...somehow
+
+the concept of closures can be lowered to a language by having a the closure be a function
+with a opaque pointer at the start as the state and then the argumetns
+so we can group those together in one type that holds the @fn(state: @ptr; args...)(return type)
+now for normal functions that we want to be passed to closure arguments we can implicitly convert them
+by wrapping them in a function with the same arguments just with state: @ptr at the front
+
+state can be renamed to ctx/ context I am not sure yet
+maybe I should let the user to build the state by himself
+
+interfaces and general pollymorphism can be achived by doing a interface @rec where we hold a @ptr and the "virtual" functions as function pointers
+very simple and this is how Zig I think does it
+allocator_factory_obj -> allocator_obj
+this can add some overhead to our containers since if we want any other allocator than a global one (like clib_malloc) we need to pass it as a state to the record/tuple
+
+
+consider lowering to C instead of LLVM-IR for simplicity
+it will bite you in the long run and it will make generics a bit hellish, pefomance might be garbo but it will be easier to get going
+LLVM is a very big dependency to have and does too many things
+but also LLVM does many things

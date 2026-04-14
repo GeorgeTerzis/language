@@ -1,0 +1,120 @@
+core: @scope (
+  allocator_t: @type = @rec(
+    type: @scope (
+      allocfn_t:   @type = ~@fn(allocator_optr: @ptr; size: u64)(@ptr);
+      reallocfn_t: @type = ~@fn(allocator_optr: @ptr; ptr: @ptr; size: u64)(@ptr);
+      freefn_t:    @type = ~@fn(allocator_optr: @ptr; ptr: @ptr);
+    );
+
+    m: @scope  (
+      allocator: @ptr;
+      alloc:     type::allocfn_t;
+      realloc:   type::reallocfn_t;
+      free:      type::freefn_t;
+    );
+
+    alloc: @fn(@self; size: u64)(@ptr) =
+      (@ret m::alloc(@self::m::allocator; size));
+
+    realloc: @fn(@self; ptr: @ptr; size: u64)(@ptr) =
+      (@ret m::realloc(@self::m::allocatr; ptr; size));
+
+    free: @fn(@self; ptr: @ptr) =
+      (m::free(@self::m::allocator; ptr));
+  );
+
+  array_t: @type = @rec{T: @type}(
+    len: u64;
+    // data: []T; //this must be on the bottom of the record
+
+    make_size: @fn(len: u64)(u64) =
+      (@ret @sizeof(u64) + @sizeof(T)*len;);
+
+    make: @fn(allocator: core::allocator_t; len: u64)(array_t{T}) = 
+      (@ret @as(^fptr{T})allocator::alloc(make_len(len)));
+  );
+  // a: @attribute{T: @type; V: s32} = ();
+
+  arena_allocator_t: @type = @rec(
+    len: u64;
+    begin_ptr: @ptr;
+    cursor_ptr: @ptr;
+
+    alloc: allocator_t::type::allocfn_t = ();
+    realloc: allocator_t::type::reallocfn_t = ();
+    free: allocator_t::type::freefn_t = ();
+
+    make_allocator: @fn(@self)(core::allocator_t) = 
+      (@ret {allocator_t}::(@self; alloc; realloc; free));
+  );
+);
+
+
+list: @type = @rec{T: @type}(
+  allocator: core::allocator_t;
+  len: u64;
+  data: ^T;
+
+  make: @fn(allocator: core::allocator_t; len: u64)(list{T}) = 
+    (@ret {list{T}}::(allocator; len; allocator::alloc(@sizeof(T)*len)));
+
+  free: @fn(@self) = (
+    @if(@self::data != @null){
+      @self::allocator::dealloc(@self::data);
+      @self::len = 0;
+    }
+  );
+);
+
+
+main: @fn = (
+    
+  pool := core::poolallocator::make();
+  pool_al := pool::make();
+  
+  variable: f32 = 10;
+
+  malloc_wraper := core::c::mallloc_t::make();
+  malloc_al := malloc_wrapper::make();
+
+  malloc_al::alloc(30);
+  a := core::array_t::make(malloc_al; 4) -> @set(@pipe::data; @(1;2;3;4));
+
+  arr := @as(^s32)pool_al::alloc(10);
+  fn0 := @fn::(@ret 30);
+  fn2 := @fn(a: s32)(s32)::(@ret a + 30);
+
+  rec0 := @rec(a: @typeof(fn); b: @typeof(fn2))::(fn0; fn2);
+  rec2 := @(fn; fn2);
+
+  a := list{s32}::make(&heap; 30);
+  a := fn0{s32}();
+
+  {s32}::(30);
+  @sizeof(s32) + 340;
+
+  @for(a := @pipe; a < 10; a++)(a);
+  @pipe -> @while(@pipe > 10)(@pipe += 10);
+
+  //I am not sure if I will support it
+  10 + 30 -> @pipe + ([[consteval]]@if(@pipe > 10){30}(@pipe < 5 ){35}{40});
+
+  a{1 - 0; s32} + @sizeof(s32);
+
+  a: @typeof(10 + 30) = 10;
+  //a, b, c depend on the result of the expresion
+  [a;b;c] := @rec(a: s32; b: s32; c: s32)::(10;20;30);
+  // [a;b;c] := @tup(s32;s32;s32)::(10;20;30);
+  // [a;b;c] := @tup()::(10;20;30);
+
+  b := (30)::a(10; 30)::a;
+  [[chain]] 10;
+
+  [[malloc]] a: @fn(size: u64)(@ptr) = ();
+   @ret 10;
+);
+
+A: @fn = a::m::fn(b) + 20 
+    -> @pipe *10 
+    -> @pipe * @pipe
+    -> A(@pipe::a);
