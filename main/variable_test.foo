@@ -1,4 +1,0 @@
-(var: @void);    // fail
-(var: s32);      // declaratio no-init
-(var := 10);     // infered type will fail for now
-(var: s32 = 10); // normal declaration

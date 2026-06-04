@@ -1,9 +1,0 @@
-module: @mod{T: @type} (
-  t: @type @rec(
-    member: module{s32}::t;
-  );
-  fntemplate: @type @fn(a: t)(@void);
-);
-
-// type_alias: @type module{f32}::t; //should pass
-// type_alias: @type module{s32}::t; //should fail

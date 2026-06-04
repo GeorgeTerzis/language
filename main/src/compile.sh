@@ -4,7 +4,7 @@ COMPLILER='clang++'
 LLVM_CONF="$(llvm-config --libs)"
 
 # -s -fvisibility=hidden -flto
-FLAGS='-std=c++23 -Wno-c++20-extensions -Wno-c++23-extensions'
+FLAGS='-std=c++26 -Wno-c++20-extensions -Wno-c++23-extensions'
 # FLAGS="$FLAGS -Og -ggdb3 -fno-omit-frame-pointer"
 # FLAGS="$FLAGS -O0 -ggdb3 -fno-omit-frame-pointer "
 FLAGS="$FLAGS -g0 -O3"

@@ -61,8 +61,7 @@
 #include <variant>
 
 template <typename T>
-T
-strview_num(std::string_view sv) {
+T strview_num(std::string_view sv) {
     T num = 0;
 
     auto [ptr, ec] = [](std::string_view sv, T num) {
@@ -79,8 +78,7 @@ strview_num(std::string_view sv) {
 
     return num;
 }
-inline std::string
-source_location_to_string(
+inline std::string source_location_to_string(
     const std::source_location& loc = std::source_location::current()) {
     char buffer[1024];
     std::snprintf(buffer,
@@ -96,8 +94,7 @@ print_source_location(const std::source_location& loc = std::source_location::cu
     std::println(stderr, "{}", source_location_to_string(loc));
 }
 template <typename T, typename... Args>
-[[nodiscard]] ref<T>
-alloc(auto& allocator, Args&&... args) noexcept {
+[[nodiscard]] ref<T> alloc(auto& allocator, Args&&... args) noexcept {
     auto ptr = allocator.template alloc<T>(std::forward<Args>(args)...);
     if (!ptr)
         return nullptr;
@@ -149,8 +146,7 @@ namespace semantics {
     template <typename T>
     struct make {
         template <typename... Args>
-        static T
-        call(Args&&... args) {
+        static T call(Args&&... args) {
             return T{std::forward<Args>(args)...};
         }
     };
@@ -169,14 +165,12 @@ namespace semantics {
         vector<ref_stmt> stmts;
         vector<ref_expr> exprs;
 
-        auto
-        bytes_allocated() const {
+        auto bytes_allocated() const {
             return allocator.bytes_allocated();
         }
 
         template <typename T, typename... Args>
-        T*
-        alloc(Args&&... args) {
+        T* alloc(Args&&... args) {
             auto ptr = allocator.alloc<T>(std::move(args)...);
             if constexpr (cmp<T, decl_t>::value)
                 decls.emplace_back(ptr);
@@ -206,21 +200,17 @@ namespace semantics {
         pool_t& _pool;
         pool_t& scratch_pool;
 
-        auto&
-        spool() {
+        auto& spool() {
             return scratch_pool;
         }
-        auto&
-        pool() {
+        auto& pool() {
             return _pool;
         }
 
-        const auto&
-        toks() const {
+        const auto& toks() const {
             return ectx.toks;
         }
-        const auto&
-        smap() const {
+        const auto& smap() const {
             return ectx.smap;
         }
 
@@ -237,8 +227,7 @@ namespace semantics {
     namespace nullability {
         enum class e : int8_t { PERMITTED, FORBIDDEN };
 
-        constexpr std::string
-        str(const e v) {
+        constexpr std::string str(const e v) {
             switch (v) {
             case e::PERMITTED:
                 return "permitted";
@@ -263,36 +252,29 @@ namespace semantics {
             constexpr t(const mutability::internal_e v) noexcept : value(v) {}
         };
 
-        [[nodiscard]] constexpr bool
-        has(const t v) {
+        [[nodiscard]] constexpr bool has(const t v) {
             return v.value != NONE;
         }
-        [[nodiscard]] constexpr bool
-        is_none(const t v) {
+        [[nodiscard]] constexpr bool is_none(const t v) {
             return v.value == NONE;
         }
-        [[nodiscard]] constexpr bool
-        is_mut(const t v) {
+        [[nodiscard]] constexpr bool is_mut(const t v) {
             return v.value == MUTABLE;
         }
-        [[nodiscard]] constexpr bool
-        is_imut(const t v) {
+        [[nodiscard]] constexpr bool is_imut(const t v) {
             return v.value == IMMUTABLE;
         }
-        [[nodiscard]] constexpr bool
-        is_const(const t v) {
+        [[nodiscard]] constexpr bool is_const(const t v) {
             return v.value == CONSTANT;
         }
 
-        [[nodiscard]] constexpr t
-        ifnone(const t v, const t then) {
+        [[nodiscard]] constexpr t ifnone(const t v, const t then) {
             if (is_none(v))
                 return then;
             return v;
         }
 
-        [[nodiscard]] constexpr bool
-        equals(const t lhs, const t rhs) {
+        [[nodiscard]] constexpr bool equals(const t lhs, const t rhs) {
             if (lhs.value == rhs.value)
                 return true;
 
@@ -302,8 +284,7 @@ namespace semantics {
             return L.value == R.value;
         }
 
-        [[nodiscard]] constexpr static std::string_view
-        str(const t val) {
+        [[nodiscard]] constexpr static std::string_view str(const t val) {
             switch (val.value) {
             case NONE:
                 return "none";
@@ -316,20 +297,16 @@ namespace semantics {
             }
         }
 
-        [[nodiscard]] constexpr static mutability::t
-        constant() {
+        [[nodiscard]] constexpr static mutability::t constant() {
             return CONSTANT;
         }
-        [[nodiscard]] constexpr static mutability::t
-        mut() {
+        [[nodiscard]] constexpr static mutability::t mut() {
             return MUTABLE;
         }
-        [[nodiscard]] constexpr static mutability::t
-        imut() {
+        [[nodiscard]] constexpr static mutability::t imut() {
             return IMMUTABLE;
         }
-        [[nodiscard]] constexpr static mutability::t
-        none() {
+        [[nodiscard]] constexpr static mutability::t none() {
             return NONE;
         }
     }; // namespace mutability
@@ -359,8 +336,7 @@ namespace semantics {
         map<std::string_view, entry_t> table = {};
 
         template <bool is_local>
-        static lookup_result
-        lookup_impl(ref_symbols& self, const std::string_view& key) {
+        static lookup_result lookup_impl(ref_symbols& self, const std::string_view& key) {
             assert(self.is_valid());
 
             auto it = self.deref().table.find(key);
@@ -372,18 +348,17 @@ namespace semantics {
             return {self, std::nullopt};
         }
 
-        static lookup_result
-        local_lookup(ref_symbols& self, const std::string_view name) {
+        static lookup_result local_lookup(ref_symbols& self,
+                                          const std::string_view name) {
             return lookup_impl<true>(self, name);
         }
 
-        static lookup_result
-        ancestor_lookup(ref_symbols& self, const std::string_view name) {
+        static lookup_result ancestor_lookup(ref_symbols& self,
+                                             const std::string_view name) {
             return lookup_impl<false>(self, name);
         }
 
-        static ref_symbols
-        get_root(ref_symbols current) {
+        static ref_symbols get_root(ref_symbols current) {
             if (!current.deref().parent)
                 return current;
             [[clang::musttail]] return get_root(current.deref().parent);
@@ -411,8 +386,7 @@ namespace semantics {
         vector<ref_ast> children;
     };
 
-    inline auto
-    transfer_ast(ref_ast dst_ast, ref_ast val_ast) {
+    inline auto transfer_ast(ref_ast dst_ast, ref_ast val_ast) {
         assert(val_ast && dst_ast);
         if (val_ast.deref().parent == dst_ast)
             return;
@@ -560,17 +534,14 @@ namespace semantics {
         namespace ptr_mut {
             enum e : int8_t { IMMUTABLE, MUTABLE };
 
-            constexpr e
-            imut() {
+            constexpr e imut() {
                 return e::IMMUTABLE;
             }
-            constexpr e
-            mut() {
+            constexpr e mut() {
                 return e::MUTABLE;
             }
 
-            constexpr std::string
-            str(const e v) {
+            constexpr std::string str(const e v) {
                 switch (v) {
                 case e::IMMUTABLE:
                     return "immutable";
@@ -605,8 +576,7 @@ namespace semantics {
         struct bitsize_t {
             std::uint16_t size;
 
-            auto
-            operator<=>(const bitsize_t& other) const = default;
+            auto operator<=>(const bitsize_t& other) const = default;
 
             operator unsigned int() {
                 return size;
@@ -651,8 +621,7 @@ namespace semantics {
 
         template <typename T>
             requires is_in_list<T, numeric_cat>::value
-        bool
-        operator==(const T& lhs, const T& rhs) {
+        bool operator==(const T& lhs, const T& rhs) {
             return lhs.size == rhs.size;
         }
 
@@ -807,8 +776,7 @@ namespace semantics {
         struct internal_if {
             ref_expr ctrl_expr;
             ref_stmts body;
-            bool
-            is_else() {
+            bool is_else() {
                 return ctrl_expr.is_null();
             }
         };
@@ -883,8 +851,7 @@ namespace semantics {
             // thus not allowing us to const the "e type"
             using e = op_operation_e;
             e type;
-            [[gnu::const]] constexpr auto
-            meta() const {
+            [[gnu::const]] constexpr auto meta() const {
                 return op_table.at((type));
             }
         };
@@ -899,8 +866,7 @@ namespace semantics {
             ref_expr operand;
             payload_t payload;
 
-            const auto
-            as_payload() {
+            const auto as_payload() {
                 if (op.type == operation_t::e::AS) {
                     return payload.get<as_payload_t>();
                 } else {
@@ -915,20 +881,17 @@ namespace semantics {
             ref_expr rhs;
         };
 
-        inline auto
-        make_uop(op_operation_e op, ref_expr o, uop_t::payload_t p) {
+        inline auto make_uop(op_operation_e op, ref_expr o, uop_t::payload_t p) {
             return uop_t{{op}, o, p};
         }
-        inline auto
-        make_bop(op_operation_e op, ref_expr lhs, ref_expr rhs) {
+        inline auto make_bop(op_operation_e op, ref_expr lhs, ref_expr rhs) {
             return bop_t{{op}, lhs, rhs};
         }
 
         using operator_variants = variants<bop_t, uop_t>::t;
         struct operator_t {
             operator_variants data;
-            auto
-            meta() const {
+            auto meta() const {
                 using ret = const op_meta_t;
                 return visit(
                     data,
@@ -1039,8 +1002,7 @@ namespace semantics {
 
     template <>
     struct make<symbols_t> {
-        [[nodiscard]] static auto
-        call(auto& allocator, ref_symbols parent) {
+        [[nodiscard]] static auto call(auto& allocator, ref_symbols parent) {
             auto ptr = alloc<symbols_t>(allocator, parent);
             return ptr;
         }
@@ -1049,39 +1011,34 @@ namespace semantics {
     template <typename T>
         requires is_in_list<T, type_structs::numeric_cat>::value
     struct make<T> {
-        [[nodiscard]] static auto
-        call(uint16_t size) {
+        [[nodiscard]] static auto call(uint16_t size) {
             return T{size};
         }
     };
 
     template <>
     struct make<type_structs::optr_t> {
-        [[nodiscard]] static auto
-        call() {
+        [[nodiscard]] static auto call() {
             return type_structs::indirection{type_structs::optr_t{}};
         }
     };
 
     template <>
     struct make<type_structs::array_t> {
-        [[nodiscard]] static auto
-        call(ref_expr size, ref_type type) {
+        [[nodiscard]] static auto call(ref_expr size, ref_type type) {
             return type_structs::indirection{type_structs::array_t{size, type}};
         }
     };
 
     template <>
     struct make<type_structs::ptr_t> {
-        [[nodiscard]] static auto
-        call(type_structs::ptr_mut::e mut, ref_type type) {
+        [[nodiscard]] static auto call(type_structs::ptr_mut::e mut, ref_type type) {
             const auto val = type_structs::ptr_t{{}, mut, type};
             return type_structs::indirection{val};
         }
     };
 
-    ref_ast
-    alloc_ast(auto& allocator, ref_ast parent, auto val) {
+    ref_ast alloc_ast(auto& allocator, ref_ast parent, auto val) {
         ref_ast node = alloc<ast_t>(allocator, val, parent);
         if (auto popt = parent.safe_deref()) {
             auto& pval = popt->get();
@@ -1089,21 +1046,19 @@ namespace semantics {
         }
         return node;
     }
-    ref_expr
-    alloc_expr(auto& allocator,
-               ref_ast parent,
-               ref_type type,
-               expr_structs::variant&& var) {
+    ref_expr alloc_expr(auto& allocator,
+                        ref_ast parent,
+                        ref_type type,
+                        expr_structs::variant&& var) {
         ref_expr ptr = alloc<expr_t>(allocator, parent, type, var);
         ref_ast ast = alloc_ast(allocator, parent, ptr);
         ptr.deref().ast = ast;
         return ptr;
     }
-    ref_expr
-    alloc_expr(auto& allocator,
-               ref_ast parent,
-               expr_structs::variant&& var,
-               auto type_producer) {
+    ref_expr alloc_expr(auto& allocator,
+                        ref_ast parent,
+                        expr_structs::variant&& var,
+                        auto type_producer) {
         ref_expr expr_ptr =
             alloc_expr(allocator, parent, ref_type{nullptr}, std::move(var));
         ref_type type_ptr = type_producer(allocator, expr_ptr.deref().ast);
@@ -1127,8 +1082,7 @@ namespace semantics {
             node.deref().ast = {ast};
             return {node, ast};
         }
-        [[nodiscard]] static node_pair<T>
-        call(auto& pool, ref_ast parent, T val) {
+        [[nodiscard]] static node_pair<T> call(auto& pool, ref_ast parent, T val) {
             auto node = alloc<T>(pool, val);
             auto ast = alloc_ast(pool, parent, node);
             node.deref().ast = {ast};
@@ -1146,20 +1100,16 @@ namespace semantics {
         rctx_t& ctx;
         payload_t _payload;
 
-        auto&
-        pool() {
+        auto& pool() {
             return _payload.pool.deref();
         }
-        auto&
-        payload() {
+        auto& payload() {
             return _payload;
         }
-        auto&
-        symbols() {
+        auto& symbols() {
             return _payload.symbols;
         }
-        auto&
-        parent() {
+        auto& parent() {
             return _payload.parent;
         }
 
@@ -1173,8 +1123,7 @@ namespace semantics {
       public:
         template <typename... Args>
         [[nodiscard]]
-        env_t
-        with(Args&&... args) const {
+        env_t with(Args&&... args) const {
             static_assert(sizeof...(Args) > 0, "Call pass instead of with");
             static_assert(sizeof...(Args) <= 3,
                           "Can only pass 3 parameters in this function");
@@ -1191,38 +1140,32 @@ namespace semantics {
             return new_env;
         }
 
-        [[nodiscard]] env_t
-        pass() {
+        [[nodiscard]] env_t pass() {
             return *this;
         }
 
         friend struct make<env_t>;
 
       private:
-        static void
-        mutate(env_t& env, ref_symbols newsymbols) {
+        static void mutate(env_t& env, ref_symbols newsymbols) {
             env._payload.symbols = newsymbols;
         }
 
-        static void
-        mutate(env_t& env, ref_ast parent) {
+        static void mutate(env_t& env, ref_ast parent) {
             env._payload.parent = parent;
         }
 
-        static void
-        mutate(env_t& env, pool_t& pool) {
+        static void mutate(env_t& env, pool_t& pool) {
             env._payload.pool = &pool;
         }
 
         template <typename Arg, typename... Args>
-        static void
-        mutate_recursion(env_t& env, Arg&& arg, Args&&... args) {
+        static void mutate_recursion(env_t& env, Arg&& arg, Args&&... args) {
             mutate(env, std::forward<Arg>(arg));
             mutate_recursion(env, std::forward<Args>(args)...);
         }
 
-        static void
-        mutate_recursion(env_t& env) {}
+        static void mutate_recursion(env_t& env) {}
     };
 
     // template <>
@@ -1254,14 +1197,12 @@ namespace semantics {
         deep_copy(pool_t& ctx) : allocator(ctx) {}
 
         template <typename T>
-        auto
-        place(ref<T> old_ptr, ref<T> new_ptr) {
+        auto place(ref<T> old_ptr, ref<T> new_ptr) {
             rmap.emplace(old_ptr.as_uint(), new_ptr);
         }
 
         template <typename T>
-        ref<T>
-        create(ref<T> old_ptr) {
+        ref<T> create(ref<T> old_ptr) {
             if (old_ptr) {
                 ref<T> new_ptr = allocator.alloc<T>(old_ptr.deref());
                 place(old_ptr, new_ptr);
@@ -1271,8 +1212,7 @@ namespace semantics {
         }
 
         template <typename T>
-        std::optional<pair<T>>
-        retrieve(const uintptr_t key) {
+        std::optional<pair<T>> retrieve(const uintptr_t key) {
             if (rmap.contains(key)) {
                 auto old_ptr = ref<T>{reinterpret_cast<T*>(key)};
                 auto new_ptr = rmap.at(key).get<ref<T>>();
@@ -1282,25 +1222,21 @@ namespace semantics {
         }
 
         template <typename T>
-        auto
-        expand_map(ref<T> ptr) {
+        auto expand_map(ref<T> ptr) {
             return expand_map<T>(ptr.deref().ast);
             // auto new_ast = map_builder{*this}.visit(ptr->ast);
             // return new_ast->data.template get<ref<T>>();
         }
         template <typename T>
-        auto
-        expand_map(ref_ast ptr) {
+        auto expand_map(ref_ast ptr) {
             auto new_ast = map_builder{*this}.visit(ptr);
             return new_ast.deref().data.get<ref<T>>();
         }
-        auto
-        replace() {
+        auto replace() {
             return replacer::entry(*this);
         }
 
-        static auto
-        entry(deep_copy& self, ref_ast root) {
+        static auto entry(deep_copy& self, ref_ast root) {
             ref_ast new_root = nullptr;
             if (root) {
                 new_root = map_builder{self}.visit(root);
@@ -1310,8 +1246,7 @@ namespace semantics {
         }
 
         template <typename T>
-        void
-        replace_val_surface(ref<T>& val) {
+        void replace_val_surface(ref<T>& val) {
             auto new_ptr = retrieve<T>(val.as_uint());
             val = new_ptr;
         }
@@ -1319,8 +1254,7 @@ namespace semantics {
       private:
         struct map_builder {
             deep_copy& self;
-            ref_ast
-            visit(ref_ast& old_ptr) {
+            ref_ast visit(ref_ast& old_ptr) {
                 auto new_ptr = self.create(old_ptr);
                 ::visit(
                     old_ptr.deref().data,
@@ -1338,18 +1272,14 @@ namespace semantics {
             deep_copy& self;
             set<void*> visited;
 
-            static void
-            entry(deep_copy& self) {
+            static void entry(deep_copy& self) {
                 replacer{self}.entry_visit();
             }
 
-            auto
-            visit_ref(std::nullptr_t) {}
-            auto
-            visit_ref(std::monostate) {}
+            auto visit_ref(std::nullptr_t) {}
+            auto visit_ref(std::monostate) {}
             template <typename T>
-            auto
-            visit_ref(ref<T>& ptr) {
+            auto visit_ref(ref<T>& ptr) {
                 auto [_, inserted] = visited.insert(ptr.as_void());
                 auto belongs = self.rmap.contains(ptr.as_uint());
                 if (!inserted || !belongs) {
@@ -1366,8 +1296,7 @@ namespace semantics {
             }
 
             template <typename ComplexT>
-            void
-            visit_vector(ComplexT& list) {
+            void visit_vector(ComplexT& list) {
                 // we need to do the check on the type, we do nto need to do it on every
                 constexpr auto fn = metavisit_factory<typename ComplexT::type>();
                 if constexpr (cmp_v<std::remove_cvref_t<decltype(fn)>, std::nullopt_t>)
@@ -1378,8 +1307,7 @@ namespace semantics {
             }
 
             template <typename ComplexT>
-            void
-            visit_map(ComplexT& map) {
+            void visit_map(ComplexT& map) {
                 constexpr auto fn = metavisit_factory<typename ComplexT::type>();
                 if constexpr (cmp_v<std::remove_cvref_t<decltype(fn)>, std::nullopt_t>)
                     return;
@@ -1388,25 +1316,20 @@ namespace semantics {
                         fn(this, elm);
             }
 
-            void
-            visit(ref_ast& ptr) {
+            void visit(ref_ast& ptr) {
                 visit_ref(ptr.deref().parent);
                 ovisit(ptr.deref().data, [this](auto& val) { visit_ref(val); });
                 visit_vector(ptr.deref().children);
             }
 
-            void
-            visit(ref<symbols_t>& ptr) {
+            void visit(ref<symbols_t>& ptr) {
                 visit_struct(ptr.deref());
             }
 
-            void
-            visit(std::monostate) {}
-            void
-            visit(std::nullptr_t) {}
+            void visit(std::monostate) {}
+            void visit(std::nullptr_t) {}
 
-            void
-            entry_visit() {
+            void entry_visit() {
                 for (auto [k, v] : self.rmap) {
                     ::visit(v,
                             overloaded{[this](auto& val) -> void { this->visit(val); }});
@@ -1414,10 +1337,9 @@ namespace semantics {
             }
 
             template <class Field>
-            static consteval auto
-            metavisit_factory() {
+            static consteval auto metavisit_factory() {
                 using type = std::remove_cvref_t<Field>;
-                if constexpr (std::is_fundamental_v<type> ||
+                if constexpr (std::is_fundamental_v<type> || std::is_enum_v<type> ||
                               is_in_list<type,
                                          type_list<nullability::e,
                                                    llvm::APFloat,
@@ -1431,9 +1353,7 @@ namespace semantics {
                                                    stmt_structs::import_t,
                                                    std::string_view,
                                                    type_structs::bitsize_t,
-                                                   type_structs::ptr_mut::e,
-                                                   mutability::t,
-                                                   mutability::internal_e>>::value) {
+                                                   mutability::t>>::value) {
                     return std::nullopt;
                 } else if constexpr (has_metadata_v<type> == "ref") {
                     return [](replacer* t, Field& v) { return t->visit_ref(v); };
@@ -1451,8 +1371,7 @@ namespace semantics {
             }
 
             template <typename T>
-            void
-            visit_member(T& val) {
+            void visit_member(T& val) {
                 constexpr auto fn = metavisit_factory<T>();
                 if constexpr (cmp_v<std::remove_cvref_t<decltype(fn)>, std::nullopt_t>)
                     return;
@@ -1461,43 +1380,35 @@ namespace semantics {
             }
 
             template <class T>
-            void
-            visit_struct(T& s) {
+            void visit_struct(T& s) {
                 ::for_each_member(s, [this](auto& v) { this->visit_member(v); });
             }
 
-            void
-            variant_visit(auto& data) {
+            void variant_visit(auto& data) {
                 // std::cout << type_str(data) << "\n" << std::endl;
                 ovisit(data, [this](auto& val) { this->visit_struct(val); });
             }
 
-            void
-            visit(ref<decl_t>& ptr) {
+            void visit(ref<decl_t>& ptr) {
                 variant_visit(ptr.deref().data);
             }
-            void
-            visit(ref<type_t>& ptr) {
+            void visit(ref<type_t>& ptr) {
                 variant_visit(ptr.deref().data);
             }
-            void
-            visit(ref<stmts_t>& ptr) {
+            void visit(ref<stmts_t>& ptr) {
                 visit_vector(ptr.deref().elms);
             }
-            void
-            visit(ref<expr_t>& ptr) {
+            void visit(ref<expr_t>& ptr) {
                 variant_visit(ptr.deref().data);
             }
-            void
-            visit(ref<stmt_t>& ptr) {
+            void visit(ref<stmt_t>& ptr) {
                 variant_visit(ptr.deref().data);
             }
         };
     };
 
     template <typename T>
-    ref_symbols
-    get_symbols(ref<T> dptr) {
+    ref_symbols get_symbols(ref<T> dptr) {
         auto ptr = dealias(dptr);
         using ret = ref_symbols;
         if constexpr (cmp_v<T, decl_t>) {
@@ -1528,8 +1439,7 @@ namespace semantics {
 
     template <typename T>
         requires(cmp_v<T, ref_type> || cmp_v<T, ref_decl>)
-    [[nodiscard]] T
-    dealias(const T& ptr) {
+    [[nodiscard]] T dealias(const T& ptr) {
         using qtype = std::conditional_t<cmp_v<T, ref_type>,
                                          type_structs::alias_t,
                                          decl_structs::decl_alias_t>;
@@ -1547,11 +1457,9 @@ namespace semantics {
         return dealias(val.ref);
     }
 
-    ref_type
-    deref(const ref_type ptr);
+    ref_type deref(const ref_type ptr);
 
-    ref_type
-    deref(ref_type ptr, type_structs::indirection& val) {
+    ref_type deref(ref_type ptr, type_structs::indirection& val) {
         return visit(
             val.data,
             [](std::monostate&) -> ref_type { std::unreachable(); },
@@ -1559,8 +1467,7 @@ namespace semantics {
             [](auto& val) -> ref_type { return deref(val.type); });
     }
 
-    ref_type
-    deref(ref_type ptr) {
+    ref_type deref(ref_type ptr) {
         return visit(
             ptr.deref().data,
             [&](type_structs::alias_t& val) -> ref_type { return deref(dealias(val)); },
@@ -1568,8 +1475,7 @@ namespace semantics {
             [&](auto&) -> ref_type { return ptr; });
     }
 
-    ref_type
-    remove_mutability(pool_t& pool, ref_type ptr) {
+    ref_type remove_mutability(pool_t& pool, ref_type ptr) {
         deep_copy dp(pool);
         auto ast = deep_copy::entry(dp, ptr.deref().ast);
         auto type = ast.deref().data.get<ref_type>();
@@ -1578,8 +1484,7 @@ namespace semantics {
     }
 
     template <auto cmp_fn, typename VariantWrapper>
-    bool
-    equal_template(const VariantWrapper& lhs, const VariantWrapper& rhs) {
+    bool equal_template(const VariantWrapper& lhs, const VariantWrapper& rhs) {
         return std::visit(
             [](const auto& lhs, const auto& rhs) -> bool {
                 if constexpr (!is_same_type(lhs, rhs))
@@ -1621,8 +1526,7 @@ namespace semantics {
 
         template <typename Policy = cmp_policy>
         struct equals {
-            static bool
-            compare(const ref_type& lhs, const ref_type& rhs) {
+            static bool compare(const ref_type& lhs, const ref_type& rhs) {
                 if (lhs == rhs)
                     return true;
                 else if (!lhs || !rhs)
@@ -1642,63 +1546,54 @@ namespace semantics {
                 return compare(l.deref(), r.deref());
             }
 
-            static bool
-            compare(const type_t& lhs, const type_t& rhs) {
+            static bool compare(const type_t& lhs, const type_t& rhs) {
                 return compare(lhs.data, rhs.data);
             }
 
-            static constexpr bool
-            compare(const string_t&, const string_t&) {
+            static constexpr bool compare(const string_t&, const string_t&) {
                 return true;
             }
 
             template <typename T>
                 requires is_in_list<T, trivialy_true>::value
-            static constexpr bool
-            compare(const T&, const T&) {
+            static constexpr bool compare(const T&, const T&) {
                 return true;
             }
 
             template <typename T>
                 requires is_in_list<T, trivialy_false>::value
-            static constexpr bool
-            compare(const T&, const T&) {
+            static constexpr bool compare(const T&, const T&) {
                 return false;
             }
 
             template <typename T>
                 requires is_in_list<T, scafolding>::value
-            static constexpr bool
-            compare(const T&, const T&) {
+            static constexpr bool compare(const T&, const T&) {
                 std::println("Scafolding {}", type_str<T>());
                 return false;
             }
 
             template <typename T>
                 requires is_in_list<T, numeric_cat>::value
-            static bool
-            compare(const T& lhs, const T& rhs) {
+            static bool compare(const T& lhs, const T& rhs) {
                 return lhs.size == rhs.size;
             }
 
             template <typename T>
                 requires is_in_list<T, type_structs::float_cat>::value
-            static constexpr bool
-            compare(const T&, const T&) {
+            static constexpr bool compare(const T&, const T&) {
                 return true;
             }
 
             template <typename T>
                 requires is_in_list<T, const_numeric_cat>::value
-            static bool
-            compare(const T&, const T&) {
+            static bool compare(const T&, const T&) {
                 return true;
             }
 
             template <typename VariantWrapper>
                 requires(has_metadata<VariantWrapper>::value == "variant")
-            static bool
-            compare(const VariantWrapper& lhs, const VariantWrapper& rhs) {
+            static bool compare(const VariantWrapper& lhs, const VariantWrapper& rhs) {
 
                 static constexpr auto different_type = [](const auto&, const auto&) {
                     return false;
@@ -1730,8 +1625,7 @@ namespace semantics {
 
             template <template <typename> class Vector, typename T>
                 requires(has_metadata<Vector<T>>::value == "vector")
-            static bool
-            compare(const Vector<T>& lhs, const Vector<T>& rhs) {
+            static bool compare(const Vector<T>& lhs, const Vector<T>& rhs) {
                 return lhs.size() == rhs.size() &&
                        std::equal(
                            lhs.begin(),
@@ -1740,15 +1634,13 @@ namespace semantics {
                            [](const auto& a, const auto& b) { return compare(a, b); });
             }
 
-            static bool
-            compare(const fntype_t& lhs, const fntype_t& rhs) {
+            static bool compare(const fntype_t& lhs, const fntype_t& rhs) {
                 return compare(lhs.args, rhs.args) && compare(lhs.ret, rhs.ret);
             }
 
             template <typename T>
-            static bool
-            bind_like_structual_equality(const ref_decl& lhs_arg,
-                                         const ref_decl& rhs_arg) {
+            static bool bind_like_structual_equality(const ref_decl& lhs_arg,
+                                                     const ref_decl& rhs_arg) {
 
                 auto dlhs = lhs_arg.deref().data.get_if<T>();
                 auto drhs = rhs_arg.deref().data.get_if<T>();
@@ -1760,9 +1652,8 @@ namespace semantics {
             }
 
             template <typename T>
-            static bool
-            vertical_parameter_equality(const vector<ref_decl>& lhs,
-                                        const vector<ref_decl>& rhs) {
+            static bool vertical_parameter_equality(const vector<ref_decl>& lhs,
+                                                    const vector<ref_decl>& rhs) {
 
                 if (lhs.size() != rhs.size())
                     return false;
@@ -1773,15 +1664,13 @@ namespace semantics {
                                   bind_like_structual_equality<T>);
             }
 
-            static bool
-            compare(const fnsig_t& lhs, const fnsig_t& rhs) {
+            static bool compare(const fnsig_t& lhs, const fnsig_t& rhs) {
                 return vertical_parameter_equality<decl_structs::argument_t>(lhs.args,
                                                                              rhs.args) &&
                        compare(lhs.ret, rhs.ret);
             }
 
-            static bool
-            compare(const variant_t& lhs, const variant_t& rhs) {
+            static bool compare(const variant_t& lhs, const variant_t& rhs) {
 
                 return ::equals(lhs.symbols.deref().table,
                                 rhs.symbols.deref().table,
@@ -1792,20 +1681,17 @@ namespace semantics {
                                 });
             }
 
-            static bool
-            compare(const rec_t& lhs, const rec_t& rhs) {
+            static bool compare(const rec_t& lhs, const rec_t& rhs) {
                 return vertical_parameter_equality<decl_structs::rec_member_t>(
                     lhs.members,
                     rhs.members);
             }
 
-            static bool
-            compare(const tup_t& lhs, const tup_t& rhs) {
+            static bool compare(const tup_t& lhs, const tup_t& rhs) {
                 return compare(lhs.members, rhs.members);
             }
 
-            static bool
-            compare(const fntemplate_t& lhs, const fntemplate_t& rhs) {
+            static bool compare(const fntemplate_t& lhs, const fntemplate_t& rhs) {
                 return compare(lhs.sig, rhs.sig);
             }
         };
@@ -1834,8 +1720,7 @@ namespace semantics {
     };
 
     template <redecl_policy rp = redecl_policy_default, typename NameT>
-    ref_decl
-    alloc_decl(env_t env, NameT name) {
+    ref_decl alloc_decl(env_t env, NameT name) {
         auto val = alloc_decl<rp, NameT>(env.pool(),
                                          env.parent(),
                                          env.symbols(),
@@ -1847,8 +1732,7 @@ namespace semantics {
         return val.value();
     };
 
-    type_structs::fntype_t
-    fntype_from_fnsig(const fnsig_t& sig) {
+    type_structs::fntype_t fntype_from_fnsig(const fnsig_t& sig) {
         type_structs::fntype_t out;
         for (const auto& arg : sig.args) {
             auto v = arg.deref().data.get_if<decl_structs::bind_t>();
@@ -1860,13 +1744,11 @@ namespace semantics {
         return out;
     }
 
-    type_structs::fntype_t
-    fntype_from_fntemplate(const type_structs::fntemplate_t& sig) {
+    type_structs::fntype_t fntype_from_fntemplate(const type_structs::fntemplate_t& sig) {
         return fntype_from_fnsig(sig.sig);
     }
 
-    fnsig_t
-    copy_fnsig(env_t env, const fnsig_t& sig) {
+    fnsig_t copy_fnsig(env_t env, const fnsig_t& sig) {
         deep_copy dp(env.pool());
         auto new_ret = dp.expand_map(sig.ret);
         vector<ref_decl> new_args;
@@ -1885,38 +1767,31 @@ namespace semantics {
         };
     }
 
-    fnsig_t
-    fnsig_from_fntemplate(env_t env, const type_structs::fntemplate_t& val) {
+    fnsig_t fnsig_from_fntemplate(env_t env, const type_structs::fntemplate_t& val) {
         return copy_fnsig(env.pass(), val.sig);
     }
 
     namespace node2ast {
-        [[nodiscard]] ref_stmts
-        stmts(env_t env, const span_t span);
-        [[nodiscard]] ref_type
-        type(env_t env, const median_t& med);
+        [[nodiscard]] ref_stmts stmts(env_t env, const span_t span);
+        [[nodiscard]] ref_type type(env_t env, const median_t& med);
     } // namespace node2ast
 
     namespace build {
 
-        auto
-        alloc_type(pool_t& allocator,
-                   ref_ast parent,
-                   mutability::t mut,
-                   type_structs::variant&& d) {
+        auto alloc_type(pool_t& allocator,
+                        ref_ast parent,
+                        mutability::t mut,
+                        type_structs::variant&& d) {
             return make<type_t>::call(allocator, parent, mut, d);
         }
-        auto
-        alloc_type(pool_t& allocator, ref_ast parent, mutability::t mut) {
+        auto alloc_type(pool_t& allocator, ref_ast parent, mutability::t mut) {
             return alloc_type(allocator, parent, mut, type_structs::placeholder{});
         }
-        ref_symbols
-        make_symbols(pool_t& allocator, ref_symbols parent) {
+        ref_symbols make_symbols(pool_t& allocator, ref_symbols parent) {
             return make<symbols_t>::call(allocator, parent);
         }
 
-        util::field
-        med2field(env_t env, median_t elm) {
+        util::field med2field(env_t env, median_t elm) {
             auto med = elm.expect<medianc::DECL>();
             auto [name_fin, type_med] = grammar::cursor_helper_t{med.children()}
                                             .tuple_extract<tokc::ID, medianc::TYPE>();
@@ -1928,11 +1803,10 @@ namespace semantics {
 
         template <typename T>
         struct append_field_span {
-            static void
-            append(T& step,
-                   pool_t& allocator,
-                   ref_ast parent,
-                   std::span<const util::field> fs) {
+            static void append(T& step,
+                               pool_t& allocator,
+                               ref_ast parent,
+                               std::span<const util::field> fs) {
                 for (auto& f : fs)
                     append(step, allocator, parent, f);
             }
@@ -1943,21 +1817,17 @@ namespace semantics {
             ref_ast ast;
             T val;
 
-            auto&
-            get() {
+            auto& get() {
                 return val;
             }
-            const auto&
-            get() const {
+            const auto& get() const {
                 return val;
             }
 
-            static multistep<T>
-            make(ref_ast ast) {
+            static multistep<T> make(ref_ast ast) {
                 return {ast, T{}};
             }
-            static multistep<T>
-            make(ref_ast ast, T&& v) {
+            static multistep<T> make(ref_ast ast, T&& v) {
                 return {ast, std::move(v)};
             }
         };
@@ -1969,26 +1839,22 @@ namespace semantics {
                 return alloc_type(allocator, parent, mut, std::move(d));
             }
 
-            static auto
-            alloc(pool_t& allocator, ref_ast parent) {
+            static auto alloc(pool_t& allocator, ref_ast parent) {
                 return alloc_type(allocator, parent, mut);
             }
 
             using tupstep = multistep<type_structs::tup_t>;
             struct tup {
-                static tupstep
-                begin(ref_ast ast) {
+                static tupstep begin(ref_ast ast) {
                     return tupstep::make(ast);
                 }
-                static void
-                append(tupstep& step, ref_type type) {
+                static void append(tupstep& step, ref_type type) {
                     step.val.members.push_back(type);
                 }
 
                 template <typename FN>
                     requires std::is_function<FN>::value
-                static void
-                append(tupstep& step, FN type_producer) {
+                static void append(tupstep& step, FN type_producer) {
                     append(step, type_producer(step.ast));
                 }
             };
@@ -2016,11 +1882,10 @@ namespace semantics {
 
             using varstep = multistep<type_structs::variant_t>;
             struct var : append_field_span<varstep> {
-                static varstep
-                begin(pool_t& allocator,
-                      ref_ast parent,
-                      ref_ast ast,
-                      ref_symbols ps = nullptr) {
+                static varstep begin(pool_t& allocator,
+                                     ref_ast parent,
+                                     ref_ast ast,
+                                     ref_symbols ps = nullptr) {
                     return varstep::make(ast, {make_symbols(allocator, ps)});
                 }
                 static std::optional<ref_decl>
@@ -2039,11 +1904,10 @@ namespace semantics {
                         return std::nullopt;
                     }
                 }
-                static void
-                append(varstep& step,
-                       pool_t& allocator,
-                       ref_ast parent,
-                       std::span<const util::field> fs) {
+                static void append(varstep& step,
+                                   pool_t& allocator,
+                                   ref_ast parent,
+                                   std::span<const util::field> fs) {
                     for (auto& f : fs)
                         append(step, allocator, parent, f);
                 }
@@ -2053,32 +1917,25 @@ namespace semantics {
             fin(pool_t& allocator, ref_ast parent, type_structs::variant&& d) {
                 return alloc(allocator, parent, std::move(d));
             }
-            static ref_type
-            float16(pool_t& allocator, ref_ast parent) {
+            static ref_type float16(pool_t& allocator, ref_ast parent) {
                 return fin(allocator, parent, type_structs::float16_t{});
             }
-            static ref_type
-            float32(pool_t& allocator, ref_ast parent) {
+            static ref_type float32(pool_t& allocator, ref_ast parent) {
                 return fin(allocator, parent, type_structs::float32_t{});
             }
-            static ref_type
-            float64(pool_t& allocator, ref_ast parent) {
+            static ref_type float64(pool_t& allocator, ref_ast parent) {
                 return fin(allocator, parent, type_structs::float64_t{});
             }
-            static ref_type
-            float128(pool_t& allocator, ref_ast parent) {
+            static ref_type float128(pool_t& allocator, ref_ast parent) {
                 return fin(allocator, parent, type_structs::float128_t{});
             }
-            static ref_type
-            const_float(pool_t& allocator, ref_ast parent) {
+            static ref_type const_float(pool_t& allocator, ref_ast parent) {
                 return fin(allocator, parent, type_structs::const_float{});
             }
-            static ref_type
-            const_int(pool_t& allocator, ref_ast parent) {
+            static ref_type const_int(pool_t& allocator, ref_ast parent) {
                 return fin(allocator, parent, type_structs::const_int{});
             }
-            static ref_type
-            const_bool(pool_t& allocator, ref_ast parent) {
+            static ref_type const_bool(pool_t& allocator, ref_ast parent) {
                 return fin(allocator, parent, type_structs::const_bool{});
             }
             static ref_type
@@ -2093,20 +1950,17 @@ namespace semantics {
             boolean(pool_t& allocator, ref_ast parent, const std::uint16_t bitsize) {
                 return fin(allocator, parent, make<type_structs::bool_t>::call(bitsize));
             }
-            static ref_type
-            nulltype(pool_t& allocator, ref_ast parent) {
+            static ref_type nulltype(pool_t& allocator, ref_ast parent) {
                 return fin(allocator, parent, type_structs::void_t{});
             }
-            static ref_type
-            placeholder(pool_t& allocator, ref_ast parent) {
+            static ref_type placeholder(pool_t& allocator, ref_ast parent) {
                 return fin(allocator, parent, type_structs::placeholder{});
             }
 
-            static ref_type
-            record(pool_t& allocator,
-                   ref_ast parent,
-                   std::span<const util::field> fields,
-                   ref_symbols ps = nullptr) {
+            static ref_type record(pool_t& allocator,
+                                   ref_ast parent,
+                                   std::span<const util::field> fields,
+                                   ref_symbols ps = nullptr) {
                 auto [ptr, ast] = alloc(allocator, parent);
                 auto step = rec::begin(allocator, ast, ps);
 
@@ -2117,11 +1971,10 @@ namespace semantics {
                 return ptr;
             }
 
-            static ref_type
-            variant(pool_t& allocator,
-                    ref_ast parent,
-                    std::span<const util::field> fields,
-                    ref_symbols ps = nullptr) {
+            static ref_type variant(pool_t& allocator,
+                                    ref_ast parent,
+                                    std::span<const util::field> fields,
+                                    ref_symbols ps = nullptr) {
                 auto [ptr, ast] = alloc(allocator, parent);
                 auto step = var::begin(allocator, parent, ast, ps);
 
@@ -2140,8 +1993,7 @@ namespace semantics {
     } // namespace build
 
     struct ast_printer {
-        static void
-        print(ref_ast root) {
+        static void print(ref_ast root) {
             ast_printer printer;
             printer.visit_ast(root);
         }
@@ -2151,11 +2003,9 @@ namespace semantics {
 
         ast_printer() = default;
         ast_printer(const ast_printer&) = delete;
-        ast_printer&
-        operator=(const ast_printer&) = delete;
+        ast_printer& operator=(const ast_printer&) = delete;
 
-        static std::string
-        strip_prefix(std::string&& str) {
+        static std::string strip_prefix(std::string&& str) {
             const std::vector<std::string> prefixes{
                 "semantics::type_structs::",
                 "semantics::stmt_structs::",
@@ -2171,13 +2021,11 @@ namespace semantics {
             return str;
         }
 
-        void
-        print_indent() const {
+        void print_indent() const {
             std::print("{}", std::string(indent_level * 2, ' '));
         }
 
-        void
-        visit_ast(ref_ast node) {
+        void visit_ast(ref_ast node) {
             if (!node) {
                 print_indent();
                 std::println("nullptr");
@@ -2221,15 +2069,13 @@ namespace semantics {
             indent_level--;
         }
 
-        void
-        visit_decl_variant(const decl_structs::variant& data) {
+        void visit_decl_variant(const decl_structs::variant& data) {
             ovisit(data, [](auto& other) {
                 std::println("{}", strip_prefix(type_str(other)));
             });
         }
 
-        void
-        visit_type_variant(const type_structs::variant& data) {
+        void visit_type_variant(const type_structs::variant& data) {
             ovisit(
                 data,
                 [](const type_structs::indirection& ind) {
@@ -2244,8 +2090,7 @@ namespace semantics {
                 [](auto& other) { std::println("{}", strip_prefix(type_str(other))); });
         }
 
-        void
-        visit_expr_variant(const expr_structs::variant& data) {
+        void visit_expr_variant(const expr_structs::variant& data) {
             visit(
                 data,
                 [](const expr_structs::operand_t& op) {
@@ -2269,8 +2114,7 @@ namespace semantics {
                 [](auto& other) { std::println("{}", strip_prefix(type_str(other))); });
         }
 
-        void
-        visit_stmt_variant(const stmt_structs::variant& data) {
+        void visit_stmt_variant(const stmt_structs::variant& data) {
             ovisit(data, [](auto& other) {
                 std::println("{}", strip_prefix(type_str(other)));
             });
