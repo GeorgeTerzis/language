@@ -256,4 +256,11 @@ list: @mod{Elm: @type}(
 // );
 
 
+// Pipe and Block expresion example
+fn: @fn(arg0: u32) u32 = arg0 * 10 -> @pipe + 20 -> (
+  @loop(i: u32 = 0) (i < @pipe) : (i += 1) (
+    //...
+  );
+  @break @pipe * 30;
+);
 
